@@ -26,13 +26,18 @@ pip install -r requirements.txt
 ## To Run
 
 1. __train.py__: Trains the neural network
-`python train.py --data_dir {where data is stored} --model_dir experiments/{base,conv,lstm}_model`
+    ```python
+    python train.py --data_dir {where data is stored} --model_dir experiments/{base,conv,lstm}_model`
+    ```
 
 1. __evaluate.py__: Used after each epoch of training to test each of the accuracies
 
 1. __search_hyperparams.py__: Used to test a parameter defined in one of the experiments. I haven't really run any yet.
-`
-python search_hyperparams.py --data_dir {where data is stored} --parent_dir experiments/{learning_rate,filter_size,etc.}
-`
+    ```
+    python search_hyperparams.py --data_dir {where data is stored} --parent_dir experiments/{learning_rate,filter_size,etc.}
+    ```
 
-1. __synthesize_results.py__: Display the results of the hyperparameters search in a nice format `python synthesize_results.py --parent_dir experiments/learning_rate`
+1. __synthesize_results.py__: Display the results of the hyperparameters search in a nice format
+    ```
+    python synthesize_results.py --parent_dir experiments/learning_rate
+    ```
