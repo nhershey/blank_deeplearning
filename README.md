@@ -26,7 +26,7 @@ pip install -r requirements.txt
 ## To Run
 
 1. __train.py__: Trains the neural network
-    ```python
+    ```
     python train.py --data_dir {where data is stored} --model_dir experiments/{base,conv,lstm}_model`
     ```
 
