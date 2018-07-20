@@ -16,9 +16,8 @@ import model.data_loader as data_loader
 from evaluate import evaluate
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='../Dad/NickFinalData.csv', help="Directory containing the dataset")
+parser.add_argument('--data_dir', default='put_data_here/', help="Directory containing the dataset")
 parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
-parser.add_argument('--files_dir', default='file_markers/', help="Directory containing txt file of listed names")
 parser.add_argument('--restore_file', default=None,
                     help="Optional, name of the file in --model_dir containing weights to reload before \
                     training")  # 'best' or 'train'
@@ -167,14 +166,14 @@ if __name__ == '__main__':
     logging.info("Loading the datasets...")
 
     # fetch dataloaders
-    dataloaders = data_loader.fetch_dataloader(['train', 'val'], args.data_dir, args.files_dir, params)
+    dataloaders = data_loader.fetch_dataloader(['train', 'val'], args.data_dir, params)
     train_dl = dataloaders['train']
     val_dl = dataloaders['val']
-
-    logging.info("- done.")
+    num_features = train_dl.dataset.num_input_features
+    logging.info("Training on %s examples, each with %s features.", len(train_dl.dataset), num_features)
 
     # Define the model and optimizer
-    model = net.Net(params).cuda() if params.cuda else net.Net(params)
+    model = net.Net(params, num_features).cuda() if params.cuda else net.Net(params, num_features)
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
     # fetch loss function and metrics

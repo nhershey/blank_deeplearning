@@ -7,7 +7,7 @@ import torch.nn.functional as F
 
 class Net(nn.Module):
 
-    def __init__(self, params):
+    def __init__(self, params, num_features):
         """
         We define a network based on the parameter to predict whether the slice is a seizure. The current models are:
         - base: flatten the matrix and apply a neural net with one hidden layer
@@ -22,7 +22,7 @@ class Net(nn.Module):
         self.type = params.type
 
         if self.type == "reg":
-            self.fc = nn.Linear(74,1)
+            self.fc = nn.Linear(num_features,1)
 
         if self.type == "conv":
             self.num_channels = params.num_channels
@@ -43,7 +43,7 @@ class Net(nn.Module):
 
         elif self.type == "base":
             # simple base model
-            self.fc_1 = nn.Linear(71,40)
+            self.fc_1 = nn.Linear(num_features,40)
             self.fc_2 = nn.Linear(40,20)
             self.fc_3 = nn.Linear(20,10)
             self.fc_4 = nn.Linear(10,5)

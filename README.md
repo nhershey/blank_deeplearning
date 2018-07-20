@@ -4,12 +4,15 @@
 
 ## Setup
 
-To install all required items
-```
-pip install -r requirements.txt
-```
+1. To install all required items
+    ```
+    pip install -r requirements.txt
+    ```
+1. Put your data in the `put_data_here` folder.
 
-## Update Based on Your Data and Architecture Choices
+1. Run `python train.py` in the main directory.
+
+<!-- ## Update Based on Your Data and Architecture Choices
 
 1. __model/data_loader.py__: Update __fetch_dataloader__ to return train, test, and validation data sets. Then, update the three functions in the DataSet subclass:
     1. __init__ - any initial start up work ,usually getting a list of file names
@@ -40,4 +43,4 @@ pip install -r requirements.txt
 1. __synthesize_results.py__: Display the results of the hyperparameters search in a nice format
     ```
     python synthesize_results.py --parent_dir experiments/learning_rate
-    ```
+    ``` -->

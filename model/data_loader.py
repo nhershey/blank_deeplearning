@@ -1,4 +1,5 @@
 import os
+import logging
 import pandas as pd
 import numpy as np
 import h5py
@@ -37,6 +38,7 @@ class HeadacheDataset(Dataset):
         elif split_type == 'test':
             self.df = all_df[int(total * 0.95) : int(total)]
 
+        self.num_input_features = self.df.shape[1] - 1
         self.data_dir = data_dir
 
     def __len__(self):
@@ -58,27 +60,42 @@ class HeadacheDataset(Dataset):
         pt_row = torch.FloatTensor(np_row)
         pt_col = torch.t(pt_row)
         tup = torch.split(pt_col, pt_col.shape[0]-1)
-        return (tup[0], int(tup[1][0][0])) # tup[1][0][0] has the raw value of the tensor
+        return (tup[0].squeeze(), int(tup[1][0][0])) # tup[1][0][0] has the raw value of the tensor
 
+def get_data_path(data_dir):
+    file_names = os.listdir(data_dir)
+    csv_files = [d for d in file_names if d[-4:] == ".csv"]
+    if len(csv_files) == 0:
+        logging.info("No .csv files in the put_data_here/ directory")
+        exit()
+    elif len(csv_files) > 1:
+        logging.info("Two or more .csv files in the put_data_here/ directory")
+        exit()
+    data_file = csv_files[0]
+    logging.info("Using %s as the data set.", data_file)
+    return data_dir + data_file
 
-def fetch_dataloader(types, data_dir, file_dir, params):
+def fetch_dataloader(types, data_dir, params):
     """
     Fetches the DataLoader object for each type in types from data_dir.
 
     Args:
         types: (list) has one or more of 'train', 'val', 'test' depending on which data is required
         data_dir: (string) directory containing the dataset
-        file_dir: (string) directory containing the list of file names to pull in
         params: (Params) hyperparameters
 
     Returns:
         data: (dict) contains the DataLoader object for each type in types
     """
+
+    # Make sure there is one csv file
+    data_path = get_data_path(data_dir)
+
     dataloaders = {}
 
     for split in ['train', 'val', 'test']:
         if split in types:
-            dl = DataLoader(HeadacheDataset(data_dir, split), batch_size=params.batch_size, shuffle=True,
+            dl = DataLoader(HeadacheDataset(data_path, split), batch_size=params.batch_size, shuffle=True,
                                         num_workers=params.num_workers,
                                         pin_memory=params.cuda)
             dataloaders[split] = dl
