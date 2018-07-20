@@ -26,23 +26,41 @@ class HeadacheDataset(Dataset):
             split_type: (string) whether train, val, or test set
         """
         all_df = pd.read_csv(data_dir)
-        for c in all_df:
-            if all_df[c].dtype == 'object':
-                all_df = all_df.drop(c, axis=1)
 
-        total = all_df.shape[0]
+        self.y_df = all_df.iloc[:,-1]
+        x_df = all_df.iloc[:,:-1]
+
+        for c in x_df:
+            # remove non-numeric with more than 10 categories (likely errors)
+            if ( (x_df[c].dtype != 'float64' and len(x_df[c].value_counts())) > 10):
+                logging.info("dropping column %s.", c)
+                x_df = x_df.drop(c, axis=1)
+
+            # remove columns with just one value
+            elif (len(x_df[c].value_counts()) == 1):
+                logging.info("dropping column %s.", c)
+                x_df = x_df.drop(c, axis=1)
+
+        # turn categorical into dummy
+        x_df = pd.get_dummies(x_df)
+
+        # standardize
+        x_df = (x_df - x_df.mean()) / x_df.std()
+
+        # split
+        total = x_df.shape[0]
         if split_type == 'train':
-            self.df = all_df[: int(total * 0.9)]
+            self.x_df = x_df[: int(total * 0.9)]
         elif split_type == 'val':
-            self.df = all_df[int(total * 0.9) : int(total * 0.95)]
+            self.x_df = x_df[int(total * 0.9) : int(total * 0.95)]
         elif split_type == 'test':
-            self.df = all_df[int(total * 0.95) : int(total)]
+            self.x_df = x_df[int(total * 0.95) : int(total)]
 
-        self.num_input_features = self.df.shape[1] - 1
+        self.num_input_features = self.x_df.shape[1]
         self.data_dir = data_dir
 
     def __len__(self):
-        return self.df.shape[0]
+        return self.x_df.shape[0]
 
     def __getitem__(self, idx):
         """
@@ -55,12 +73,11 @@ class HeadacheDataset(Dataset):
             image: (Tensor) transformed image
             label: (int) corresponding label of image
         """
-        pd_row = self.df.iloc[[idx]]
+        pd_row = self.x_df.iloc[[idx]]
         np_row = pd_row.as_matrix()
         pt_row = torch.FloatTensor(np_row)
         pt_col = torch.t(pt_row)
-        tup = torch.split(pt_col, pt_col.shape[0]-1)
-        return (tup[0].squeeze(), int(tup[1][0][0])) # tup[1][0][0] has the raw value of the tensor
+        return (pt_col.squeeze(), self.y_df[idx]) # tup[1][0][0] has the raw value of the tensor
 
 def get_data_path(data_dir):
     file_names = os.listdir(data_dir)
