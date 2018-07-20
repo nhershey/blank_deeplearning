@@ -106,6 +106,5 @@ if __name__ == '__main__':
     """ used for testing"""
     PATH_TO_DATA = "../../Dad/NickFinalData.csv"
     sd = HeadacheDataset(PATH_TO_DATA, 'train')
-    print sd[5]
     # for i, (train_batch, labels_batch) in enumerate(sd):
     #     print(i, train_batch.shape)
