@@ -22,7 +22,7 @@ class Net(nn.Module):
         self.type = params.type
 
         if self.type == "reg":
-            self.fc = nn.Linear(50000,1)
+            self.fc = nn.Linear(74,1)
 
         if self.type == "conv":
             self.num_channels = params.num_channels
@@ -40,12 +40,14 @@ class Net(nn.Module):
             self.fcbn1 = nn.BatchNorm1d(self.num_channels*4)
             self.fc2 = nn.Linear(self.num_channels*4, 1)
             self.dropout_rate = params.dropout_rate
-        
+
         elif self.type == "base":
             # simple base model
-            self.fc_1 = nn.Linear(50000,1000)
-            self.fc_2 = nn.Linear(1000,30)
-            self.fc_3 = nn.Linear(30,1)
+            self.fc_1 = nn.Linear(71,40)
+            self.fc_2 = nn.Linear(40,20)
+            self.fc_3 = nn.Linear(20,10)
+            self.fc_4 = nn.Linear(10,5)
+            self.fc_5 = nn.Linear(5,1)
 
         elif self.type == "lstm":
             # input_size, hidden_size, num_layers
@@ -87,7 +89,7 @@ class Net(nn.Module):
 
 
 
-            
+
 
     def forward(self, s):
         """
@@ -100,8 +102,9 @@ class Net(nn.Module):
 
         Note: the dimensions after each step are provided
         """
+        s = s.squeeze()
+
         if (self.type == "reg"):
-            s = s.view(-1, 50000)
             s = self.fc(s)
             return F.sigmoid(s)
 
@@ -124,32 +127,36 @@ class Net(nn.Module):
             return F.sigmoid(s)
 
         elif (self.type == "base"):
-            s = s.view(-1, 50000) 
-            s = F.relu(self.fc_1(s))
-            s = F.relu(self.fc_2(s))
-            s = self.fc_3(s)
-            return F.sigmoid(s)
+            so = s
+            # import ipdb; ipdb.set_trace()
+            # s = s.view(-1, 50000)
+            so = F.relu(self.fc_1(so))
+            so = F.relu(self.fc_2(so))
+            so = F.relu(self.fc_3(so))
+            so = F.relu(self.fc_4(so))
+            so = self.fc_5(so)
+            return F.sigmoid(so)
 
         elif (self.type == "lstm"):
             s = s.transpose(0, 1)
             # Forward propagate RNN
-            out, _ = self.lstm(s)  
+            out, _ = self.lstm(s)
             # Decode hidden state of last time step (seq_len, batch, hidden_size * num_directions)
             last_out = out[-1,:,:]
-            out = self.fc(last_out)  
+            out = self.fc(last_out)
             return F.sigmoid(out)
 
         elif (self.type == "deeplstm"):
             s = s.transpose(0, 1)
             # Forward propagate RNN
-            out, hidden = self.lstm(s)  
+            out, hidden = self.lstm(s)
             # Decode hidden state of last time step (seq_len, batch, hidden_size * num_directions)
             s = F.relu(F.max_pool1d(hidden[0], 2))
             s = s.transpose(0, 1)
             s = s.contiguous()
             s = s.view(-1, 4 * 10)
             s = F.relu(self.fcbn1(self.fc1(s)))
-            s = self.fc2(s)  
+            s = self.fc2(s)
             return F.sigmoid(s)
 
         elif (self.type == "deepconv"):
