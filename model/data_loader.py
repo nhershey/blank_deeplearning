@@ -33,12 +33,12 @@ class HeadacheDataset(Dataset):
         for c in x_df:
             # remove non-numeric with more than 10 categories (likely errors)
             if ( (x_df[c].dtype != 'float64' and len(x_df[c].value_counts())) > 10):
-                logging.info("dropping column %s.", c)
+                logging.info("dropping column {}.".format(c))
                 x_df = x_df.drop(c, axis=1)
 
             # remove columns with just one value
             elif (len(x_df[c].value_counts()) == 1):
-                logging.info("dropping column %s.", c)
+                logging.info("dropping column {}.".format(c))
                 x_df = x_df.drop(c, axis=1)
 
         # turn categorical into dummy
@@ -89,8 +89,8 @@ def get_data_path(data_dir):
         logging.info("Two or more .csv files in the put_data_here/ directory")
         exit()
     data_file = csv_files[0]
-    logging.info("Using %s as the data set.", data_file)
-    return data_dir + data_file
+    logging.info("Using {} as the data set.".format(data_file))
+    return os.path.join(data_dir, data_file)
 
 def fetch_dataloader(types, data_dir, params):
     """
@@ -111,6 +111,7 @@ def fetch_dataloader(types, data_dir, params):
     dataloaders = {}
 
     for split in ['train', 'val', 'test']:
+        logging.info("CREATING {} DATA SET.".format(split))
         if split in types:
             dl = DataLoader(HeadacheDataset(data_path, split), batch_size=params.batch_size, shuffle=True,
                                         num_workers=params.num_workers,
@@ -124,4 +125,4 @@ if __name__ == '__main__':
     PATH_TO_DATA = "../../Dad/NickFinalData.csv"
     sd = HeadacheDataset(PATH_TO_DATA, 'train')
     # for i, (train_batch, labels_batch) in enumerate(sd):
-    #     print(i, train_batch.shape)
+    #     logging.info(i, train_batch.shape)
